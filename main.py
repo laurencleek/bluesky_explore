@@ -28,6 +28,29 @@ except Exception as e:
     print(f"Failed to log in: {e}")
     exit()
 
+# Set a consistent style for all plots
+plt.style.use("tableau-colorblind10")
+plt.rcParams.update({
+    'figure.figsize': (12, 8),
+    'axes.titlesize': 16,
+    'axes.titleweight': 'bold',
+    'axes.labelsize': 14,
+    'axes.labelweight': 'bold',
+    'xtick.labelsize': 12,
+    'ytick.labelsize': 12,
+    'legend.fontsize': 12,
+    'legend.title_fontsize': 14,
+    'grid.alpha': 0.6,
+    'grid.linestyle': '--',
+    'font.family': 'serif',
+    'font.serif': 'Times New Roman',
+    'text.color': '#4d4d4d',  
+    'axes.labelcolor': '#4d4d4d', 
+    'xtick.color': '#4d4d4d', 
+    'ytick.color': '#4d4d4d',  
+    'legend.edgecolor': '#4d4d4d' 
+})
+
 # Fetch Followers
 def fetch_followers(client, actor_handle):
     followers = []
@@ -79,17 +102,18 @@ plt.xticks(rotation=45, fontsize=10)
 plt.yticks(fontsize=10)
 plt.title("Cumulative Followers Over Time", fontsize=16, fontweight='bold')
 plt.grid(visible=True, linestyle='--', alpha=0.6)
-plt.legend(fontsize=10, loc='upper left')
+plt.legend(fontsize=10, loc='upper left', edgecolor='#4d4d4d') 
 plt.tight_layout()
 plt.show()
 
 ### Wordcloud followers info
 descriptions = ' '.join(df['description'].dropna().astype(str))
-wordcloud = WordCloud(width=800, height=400, background_color='white').generate(descriptions)
+excluded_words = ['https', 'bsky', 'social', 'github', 'io', 'in', 'a', 'the', 'of','at', 'not', 'wwww', 'on', 'com', 'with', 'she', 'her', 's', 'en', 'WWW', 'he', 'him', 'de', 'also', 'one', 'http', '.', 'and', 'to']
+wordcloud = WordCloud(width=800, height=400, background_color='white', stopwords=set(excluded_words)).generate(descriptions)
 plt.figure(figsize=(10, 6))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
-plt.title(" ", fontsize=16, fontweight='bold')
+plt.title("", fontsize=16, fontweight='bold')
 plt.show()
 
 ### Plot a histogram of account creation dates per month
@@ -112,7 +136,7 @@ df['day'] = df['created_at'].dt.floor('D')
 vectorizer = CountVectorizer(stop_words='english', max_features=20)
 word_counts = vectorizer.fit_transform(df['description'].dropna())
 words_df = pd.DataFrame(word_counts.toarray(), columns=vectorizer.get_feature_names_out())
-words_df['day'] = df['day'].values[:len(words_df)]  # Ensure matching dimensions for 'day'
+words_df['day'] = df['day'].values[:len(words_df)]  
 excluded_words = ['delete', 'bsky', 'com', 'https', 'www']
 filtered_words_df = words_df.drop(columns=[word for word in excluded_words if word in words_df])
 filtered_words_over_time = filtered_words_df.groupby('day').sum()
@@ -127,16 +151,16 @@ grouped_themes = pd.DataFrame(index=filtered_words_over_time.index)
 for theme, words in themes.items():
     grouped_themes[theme] = filtered_words_over_time[words].sum(axis=1)
 plt.figure(figsize=(14, 8))
-grouped_themes.plot.area(ax=plt.gca(), alpha=0.8, colormap='tab20c')  # Use a colormap for better distinction
+grouped_themes.plot.area(ax=plt.gca(), alpha=0.8, colormap='tab20c')  
 plt.title("Word Trends in Follower Descriptions Grouped by Theme (Stacked)", fontsize=16, fontweight='bold')
 plt.ylabel("Frequency")
-plt.legend(title="Themes", fontsize=10, loc='upper left')
+plt.legend(title="Themes", fontsize=10, loc='upper left', edgecolor='#4d4d4d')  
 plt.grid(visible=True, linestyle='--', alpha=0.6)
 plt.tight_layout()
 plt.show()
 
 ### Gender comparison graph
-df['first_name'] = df['display_name'].str.split().str[0]  # Extract first word as the first name
+df['first_name'] = df['display_name'].str.split().str[0] 
 
 d = gender.Detector()
 df['predicted_gender'] = df['first_name'].apply(lambda x: d.get_gender(x) if isinstance(x, str) else None)
@@ -156,7 +180,8 @@ for index, value in enumerate(gender_totals):
         f"{int(value):,}",
         ha="center",
         fontsize=12,
-        fontweight="bold"
+        fontweight="bold",
+        color='#4d4d4d'  
     )
 
 plt.title("Total Gender Distribution of Followers", fontsize=18, fontweight="bold")
@@ -219,7 +244,8 @@ for i, time_period in enumerate(time_periods):
                 ha="center",
                 va="bottom",
                 fontsize=10,
-                fontweight="bold"
+                fontweight="bold",
+                color='#4d4d4d'  
             )
 
 ax.set_title("Academic Ranks by Gender Before and After October 2024", fontsize=16, fontweight="bold")
@@ -233,8 +259,7 @@ legend_elements = [
     plt.Line2D([0], [0], color=colors["After October"]["male"], lw=6, label="After October (Male)"),
     plt.Line2D([0], [0], color=colors["After October"]["female"], lw=6, label="After October (Female)")
 ]
-ax.legend(handles=legend_elements, fontsize=10, loc="upper left", title="Time Period (Gender)")
+ax.legend(handles=legend_elements, fontsize=10, loc="upper left", title="Time Period (Gender)", edgecolor='#4d4d4d')  # Darker grey
 ax.grid(visible=True, linestyle="--", alpha=0.6, axis="y")
 plt.tight_layout()
 plt.show()
-
